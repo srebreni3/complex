@@ -18,7 +18,7 @@ jobs:
       - run: docker build -t srebreni3/multi-server ./server
       - run: docker build -t srebreni3/multi-worker ./worker
 
-      - run: docker push srebreni3/multi-client/multi-client
+      - run: docker push srebreni3/multi-client
       - run: docker push srebreni3/multi-nginx
       - run: docker push srebreni3/multi-server
       - run: docker push srebreni3/multi-worker
