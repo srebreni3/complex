@@ -14,37 +14,72 @@ class Fib extends Component {
   }
 
   async fetchValues() {
-    const values = await axios.get('/api/values/current');
-    this.setState({ values: values.data });
+    try {
+      const res = await axios.get('/api/values/current');
+
+      // Ensure we store an object (index -> value)
+      const values = res && res.data && typeof res.data === 'object' ? res.data : {};
+      this.setState({ values });
+
+      // Debug: see what we got back
+      // Remove later if you want
+      // eslint-disable-next-line no-console
+      console.log('GET /api/values/current ->', res.data);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to fetch values (/api/values/current):', err);
+      this.setState({ values: {} });
+    }
   }
 
   async fetchIndexes() {
-    const seenIndexes = await axios.get('/api/values/all');
-    this.setState({
-      seenIndexes: seenIndexes.data,
-    });
+    try {
+      const res = await axios.get('/api/values/all');
+
+      // Ensure we store an array
+      const seenIndexes = Array.isArray(res.data) ? res.data : [];
+      this.setState({ seenIndexes });
+
+      // Debug: see what we got back
+      // Remove later if you want
+      // eslint-disable-next-line no-console
+      console.log('GET /api/values/all ->', res.data);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to fetch indexes (/api/values/all):', err);
+      this.setState({ seenIndexes: [] });
+    }
   }
 
   handleSubmit = async (event) => {
     event.preventDefault();
 
-    await axios.post('/api/values', {
-      index: this.state.index,
-    });
-    this.setState({ index: '' });
+    try {
+      await axios.post('/api/values', { index: this.state.index });
+      this.setState({ index: '' });
+
+      // Optional: refresh after submit so UI updates quickly
+      this.fetchValues();
+      this.fetchIndexes();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to submit index (/api/values):', err);
+    }
   };
 
   renderSeenIndexes() {
-    return this.state.seenIndexes.map(({ number }) => number).join(', ');
+    const seen = Array.isArray(this.state.seenIndexes) ? this.state.seenIndexes : [];
+    return seen.map(({ number }) => number).join(', ');
   }
 
   renderValues() {
     const entries = [];
 
-    for (let key in this.state.values) {
+    const values = this.state.values && typeof this.state.values === 'object' ? this.state.values : {};
+    for (let key in values) {
       entries.push(
         <div key={key}>
-          For index {key} I calculated {this.state.values[key]}
+          For index {key} I calculated {values[key]}
         </div>
       );
     }
